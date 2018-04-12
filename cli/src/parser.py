@@ -139,7 +139,9 @@ class Parser:
         """
         self.__commands_list = {'cat': CommandCAT, 'echo': CommandECHO,
                                 'exit': CommandEXIT, 'pwd': CommandPWD,
-                                'wc': CommandWC, 'grep': CommandGREP}
+                                'wc': CommandWC, 'grep': CommandGREP,
+                                'cd' : CommandCd,
+                                'ls' : CommandLs}
         command_cls = self.__commands_list.get(name, None)
         if command_cls:
             command_cls = command_cls()

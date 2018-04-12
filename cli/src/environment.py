@@ -28,3 +28,7 @@ class Environment:
     def get_cwd(self):
         """Returns the current working directory."""
         return self.__current_working_directory
+    
+    def set_cwd(self, dirname):
+        """Sets the current working directory"""
+        self.__current_working_directory = dirname

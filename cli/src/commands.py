@@ -59,6 +59,64 @@ class Command(metaclass=ABCMeta):
         return NotImplemented
 
 
+class CommandCd(Command):
+    """
+    Changes current directory.
+    If called without arguments, or with '~', goes to system working directory.
+    '..' makes one level up.
+    """
+    def set_args(self, args):
+        self.args = args
+    def run(self, input, env):
+        output = Stream()
+        if len(self.args) < 1:
+            arg = '~'
+        else:
+            arg = self.args[0]
+
+        if arg == '~':
+            abs_path = os.getcwd()
+        elif arg == '..':
+            abs_path, tail = os.path.split(env.get_cwd())
+        else:
+            abs_path = os.path.join(env.get_cwd(), arg)
+        
+        rv = 0
+        if os.path.isdir(abs_path):
+            env.set_cwd(abs_path)  
+            output.write_line('directory "' + env.get_cwd() + '" set')
+        else:
+            output.write_line('path ' + arg + ' not correct')
+            rv = 1
+        return CommandResult(output, env, rv)
+
+class CommandLs(Command):
+    """
+    Lists entries of current directory, if called without arguments,
+    or entries of specified directory.
+    If file name passed, only it will be printed.
+    """
+    def set_args(self, args):
+        self.args = args
+    def run(self, input, env):
+        output = Stream()
+        
+        rv = 0
+        if len(self.args) < 1:
+            res = '\n'.join(os.listdir(env.get_cwd()))
+        else:
+            ls_path = os.path.join(env.get_cwd(), self.args[0])
+            if os.path.exists(ls_path):
+                if os.path.isdir(ls_path):
+                    res = '\n'.join(os.listdir(ls_path))
+                else:
+                    head, res = os.path.split(ls_path)
+            else:
+                res = '"'+ls_path+'" not exists'
+                rv = 1
+        output.write_line(res)
+        return CommandResult(output, env, rv)
+
 class CommandPIPE(Command):
     """
     The abstract of PIPE that takes left command's output
@@ -133,7 +191,7 @@ class CommandCAT(Command):
                                         format(file))
                     return_value = 1
                     break
-                with open(file, 'r') as opened_file:
+                with open(file_path, 'r') as opened_file:
                     self.__output.write(opened_file.read())
         return CommandResult(self.__output, env, return_value)
 
@@ -263,7 +321,7 @@ class CommandWC(Command):
                                         format(file))
                     return_value = 1
                     break
-                with open(file, 'r') as opened_file:
+                with open(file_path, 'r') as opened_file:
                     text = opened_file.read()
                     result.append((file, self.__count_lines_words_bytes(text)))
 
@@ -438,7 +496,7 @@ class CommandGREP(Command):
                                              format(file))
                     return CommandResult(self.__output, env, 1)
 
-                with open(file, 'r') as f:
+                with open(file_path, 'r') as f:
                     self.__result = ''
                     self.__i = 0
                     lines = f.readlines()
