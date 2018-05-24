@@ -58,7 +58,7 @@ class Cli:
                     if result:
                         output = result.get_output()
                         if output:
-                            print(output)
+                            print(output, end='')
                         return_value = result.return_value()
                     if return_value:
                         print('Process exited with error code {}'.
@@ -71,8 +71,8 @@ class Cli:
                 running = False
             except EOFError:
                 running = False
-            except Exception:
-                print('Something wrong, sorry.')
+            except Exception as e:
+                print('Something wrong, sorry. ' + str(e))
                 return
 
         print('Good bye.')
