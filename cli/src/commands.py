@@ -69,6 +69,11 @@ class CommandCd(Command):
         self.args = args
     def run(self, input, env):
         output = Stream()
+        
+        if len(self.args) > 1:
+            output.write_line('too many arguments')
+            return CommandResult(output, env, 1)
+
         if len(self.args) < 1:
             arg = '~'
         else:
@@ -83,7 +88,7 @@ class CommandCd(Command):
         
         rv = 0
         if os.path.isdir(abs_path):
-            env.set_cwd(abs_path)  
+            env.set_cwd(os.path.normpath(abs_path))
             output.write_line('directory "' + env.get_cwd() + '" set')
         else:
             output.write_line('path ' + arg + ' not correct')
@@ -101,6 +106,10 @@ class CommandLs(Command):
     def run(self, input, env):
         output = Stream()
         
+        if len(self.args) > 1:
+            output.write_line('too many arguments')
+            return CommandResult(output, env, 1)
+
         rv = 0
         if len(self.args) < 1:
             res = '\n'.join(os.listdir(env.get_cwd()))
@@ -112,7 +121,7 @@ class CommandLs(Command):
                 else:
                     head, res = os.path.split(ls_path)
             else:
-                res = '"'+ls_path+'" not exists'
+                res = '"' + ls_path + '" not exists'
                 rv = 1
         output.write_line(res)
         return CommandResult(output, env, rv)
